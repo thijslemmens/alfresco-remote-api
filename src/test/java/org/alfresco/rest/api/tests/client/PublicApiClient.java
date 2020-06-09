@@ -1150,7 +1150,7 @@ public class PublicApiClient
         }
 
         public SiteGroup updateGroup(String siteId, SiteGroup group) throws PublicApiException {
-            HttpResponse response = update("sites", siteId, "group-members", null, group.toJSON().toString() , "Failed to update a site group");
+            HttpResponse response = update("sites", siteId, "group-members", group.getId(), group.toJSON().toString() , "Failed to update a site group");
             return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
         }
 

@@ -1372,7 +1372,7 @@ public class SitesImpl implements Sites
     }
 
     private void validateSiteGroup(String siteId, String groupId) throws EntityNotFoundException {
-        String authorityName = authorityService.getName(null, groupId);
+        String authorityName = authorityService.getName(AuthorityType.GROUP, groupId);
         SiteInfo siteInfo = validateSite(siteId);
         if(siteInfo == null) {
             logger.debug("Site does not exist: " + siteId);

@@ -43,14 +43,10 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 public class TestSiteGroups extends AbstractBaseApiTest {
     protected AuthorityService authorityService;
-    private List<SiteMember> expectedSiteMembers = new ArrayList<SiteMember>();
 
     @Before
     public void setup() throws Exception {
@@ -79,16 +75,29 @@ public class TestSiteGroups extends AbstractBaseApiTest {
             }, DEFAULT_ADMIN, networkOne.getId());
 
 
-            SiteGroup reponse = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
-            assertEquals(reponse.getGroup().getId(), groupName);
-            assertEquals(reponse.getRole(), SiteRole.SiteCollaborator.name());
-
-            paging = getPaging(skipCount, maxItems, 10, null);
-            sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            assertEquals(response.getGroup().getId(), groupName);
+            assertEquals(response.getRole(), SiteRole.SiteCollaborator.name());
 
             siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
-            checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
+            assertEquals(siteMembers.getList().size(), 3);
 
+            paging = getPaging(skipCount, maxItems, 10, null);
+            PublicApiClient.ListResponse<SiteGroup> groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            assertEquals(groups.getList().size(), 1);
+            assertEquals(groups.getList().get(0).getRole(), SiteRole.SiteCollaborator.name());
+
+            response = sitesProxy.updateGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteContributor.name()));
+            groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            assertEquals(groups.getList().size(), 1);
+            assertEquals(groups.getList().get(0).getRole(), SiteRole.SiteContributor.name());
+
+            sitesProxy.deleteGroup(site.getSiteId(), response.getId());
+            groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            assertEquals(groups.getList().size(), 0);
+
+            siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
+            assertEquals(siteMembers.getList().size(), 1);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
