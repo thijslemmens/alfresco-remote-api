@@ -68,7 +68,7 @@ public class SOLRSerializerTest
 	}
 
 	@Test
-	public void testChildAssociationRefToJSONString() throws JSONException {
+	public void testChildAssociationRefToJSONString() {
 		SOLRSerializer solrSerializer = new SOLRSerializer();
 		solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
 		solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
@@ -79,6 +79,11 @@ public class SOLRSerializerTest
 		String validJsonString = solrSerializer.serializeToJSONString(childAssociationRef);
 		// Constructing a json object using the value
 		String jsonObjectString = String.format("{ \"key\": \"%s\" }", validJsonString);
-		JSONObject jsonObject = new JSONObject(jsonObjectString);
+		try {
+			JSONObject jsonObject = new JSONObject(jsonObjectString);
+		} catch (JSONException e) {
+			// This only happens when there is a problem parsing the string
+			assert false;
+		}
 	}
 }
