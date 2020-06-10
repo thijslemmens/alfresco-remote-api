@@ -29,9 +29,18 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.solr.SOLRSerializer.SOLRTypeConverter;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class SOLRSerializerTest 
 {
@@ -56,5 +65,20 @@ public class SOLRSerializerTest
           Date testDate = ISO8601DateFormat.parse(iso);
           String strDate = typeConverter.INSTANCE.convert(String.class, testDate);
           assertEquals(zulu, strDate);
+	}
+
+	@Test
+	public void testChildAssociationRefToJSONString() throws JSONException {
+		SOLRSerializer solrSerializer = new SOLRSerializer();
+		solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
+		solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
+		solrSerializer.init();
+		QName childQName = QName.createQName("hello", "wo\rld");
+		ChildAssociationRef childAssociationRef = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
+				new NodeRef("workspace://SpacesStore/parent"), childQName, new NodeRef("workspace://SpacesStore/child"));
+		String validJsonString = solrSerializer.serializeToJSONString(childAssociationRef);
+		// Constructing a json object using the value
+		String jsonObjectString = String.format("{ \"key\": \"%s\" }", validJsonString);
+		JSONObject jsonObject = new JSONObject(jsonObjectString);
 	}
 }
